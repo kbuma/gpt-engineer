@@ -10,7 +10,7 @@ from termcolor import colored
 
 from gpt_engineer.ai import AI
 from gpt_engineer.chat_to_files import to_files
-from gpt_engineer.db import DBs
+from gpt_engineer.db import DBs, archive
 from gpt_engineer.learning import human_input
 
 Message = Union[AIMessage, HumanMessage, SystemMessage]
@@ -256,20 +256,19 @@ def use_feedback(ai: AI, dbs: DBs):
 
 
 def fix_code(ai: AI, dbs: DBs):
-    messages = AI.deserialize_messages(dbs.logs[gen_code.__name__])
-    code_output = messages[-1].content.strip()
+    code_output = dbs.workspace["all_output.txt"]
     messages = [
         ai.fsystem(setup_sys_prompt(dbs)),
         ai.fuser(f"Instructions: {dbs.input['prompt']}"),
         ai.fuser(code_output),
         ai.fsystem(dbs.preprompts["fix_code"]),
     ]
+    archive(dbs)
     messages = ai.next(
         messages, "Please fix any errors in the code above.", step_name=curr_fn()
     )
     to_files(messages[-1].content.strip(), dbs.workspace)
     return messages
-
 
 def human_review(ai: AI, dbs: DBs):
     review = human_input()
