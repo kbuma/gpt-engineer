@@ -261,7 +261,7 @@ def fix_code(ai: AI, dbs: DBs):
         ai.fsystem(setup_sys_prompt(dbs)),
         ai.fuser(f"Instructions: {dbs.input['prompt']}"),
         ai.fuser(code_output),
-        ai.fsystem(dbs.preprompts["fix_code"]),
+        ai.fsystem(dbs.input['fix_prompt']),
     ]
     archive(dbs)
     messages = ai.next(
