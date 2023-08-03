@@ -156,8 +156,7 @@ def fallback_model(model: str) -> str:
     except openai.InvalidRequestError:
         print(
             f"Model {model} not available for provided API key. Reverting "
-            "to gpt-3.5-turbo. Sign up for the GPT-4 wait list here: "
-            "https://openai.com/waitlist/gpt-4-api\n"
+            "to gpt-3.5-turbo-16k.\n"
         )
         return "gpt-3.5-turbo"
 
@@ -172,7 +171,7 @@ def create_chat_model(model: str, temperature) -> BaseChatModel:
         )
     elif model == "gpt-3.5-turbo":
         return ChatOpenAI(
-            model="gpt-3.5-turbo",
+            model="gpt-3.5-turbo-16k",
             temperature=temperature,
             streaming=True,
             client=openai.ChatCompletion,
