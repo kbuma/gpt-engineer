@@ -9,7 +9,7 @@ from typing import List, Optional, Union
 import openai
 import tiktoken
 
-from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+from langchain.callbacks.file import FileCallbackHandler
 from langchain.chat_models import ChatOpenAI
 from langchain.chat_models.base import BaseChatModel
 from langchain.schema import (
@@ -37,10 +37,10 @@ class TokenUsage:
 
 
 class AI:
-    def __init__(self, model_name="gpt-4", temperature=0.1):
+    def __init__(self, model_name="gpt-4", temperature=0.1, top_p=0.1):
         self.temperature = temperature
         self.model_name = fallback_model(model_name)
-        self.llm = create_chat_model(self.model_name, temperature)
+        self.llm = create_chat_model(self.model_name, temperature, top_p)
         self.tokenizer = get_tokenizer(self.model_name)
 
         # initialize token usage log
@@ -77,7 +77,7 @@ class AI:
 
         logger.debug(f"Creating a new chat completion: {messages}")
 
-        callsbacks = [StreamingStdOutCallbackHandler()]
+        callsbacks = [FileCallbackHandler('gpt-engineer.log')]
         response = self.llm(messages, callbacks=callsbacks)  # type: ignore
         messages.append(response)
 
@@ -161,13 +161,14 @@ def fallback_model(model: str) -> str:
         return "gpt-3.5-turbo"
 
 
-def create_chat_model(model: str, temperature) -> BaseChatModel:
+def create_chat_model(model: str, temperature, top_p) -> BaseChatModel:
     if model == "gpt-4":
         return ChatOpenAI(
             model="gpt-4",
             temperature=temperature,
             streaming=True,
             client=openai.ChatCompletion,
+            top_p = top_p,
         )
     elif model == "gpt-3.5-turbo":
         return ChatOpenAI(
@@ -175,6 +176,7 @@ def create_chat_model(model: str, temperature) -> BaseChatModel:
             temperature=temperature,
             streaming=True,
             client=openai.ChatCompletion,
+            top_p = top_p,
         )
     else:
         raise ValueError(f"Model {model} is not supported.")
